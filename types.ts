@@ -73,8 +73,8 @@ export interface LogEntry {
 
 export interface RemoteConfig {
   apiKey: string;
-  remoteUser: string;
-  remotePass: string;
+  remoteAdminId: string;
+  lastGenerated: string;
 }
 
 export type ViewState = 'dashboard' | 'proxies' | 'profiles' | 'users' | 'settings' | 'logs' | 'api';
