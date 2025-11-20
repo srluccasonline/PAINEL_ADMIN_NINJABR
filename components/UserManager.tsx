@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { User, Profile } from '../types';
-import { Search, UserPlus, Lock, Unlock, Trash2, Calendar, Star, Filter, Edit2, Key, ShieldAlert, Check, MoreHorizontal, ChevronDown, Eye, CalendarClock, Shuffle } from 'lucide-react';
+import { Search, UserPlus, Lock, Unlock, Trash2, Star, Filter, Edit2, Key, ShieldAlert, Check, MoreHorizontal, ChevronDown, Eye, CalendarClock, Shuffle } from 'lucide-react';
 import { Modal } from './ui/Modal';
 
 interface UserManagerProps {
@@ -37,7 +37,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ users, setUsers, profi
   const [editingId, setEditingId] = useState<string | null>(null);
   
   const [formUsername, setFormUsername] = useState('');
-  const [formNickname, setFormNickname] = useState(''); // Added Nickname
+  const [formNickname, setFormNickname] = useState(''); 
   const [formPassword, setFormPassword] = useState('');
   const [formEmail, setFormEmail] = useState('');
   const [formAssignedProfiles, setFormAssignedProfiles] = useState<string[]>([]);
@@ -178,7 +178,6 @@ export const UserManager: React.FC<UserManagerProps> = ({ users, setUsers, profi
           if (u.id !== renewingUserId) return u;
           
           let newDate = new Date(u.expirationDate);
-          // If already expired, start from today
           if (newDate < new Date()) {
               newDate = new Date();
           }
@@ -309,7 +308,6 @@ export const UserManager: React.FC<UserManagerProps> = ({ users, setUsers, profi
              </div>
          </div>
 
-         {/* Bulk Actions Dropdown */}
          {selectedUsers.length > 0 && (
              <div className="relative">
                  <button 
@@ -336,7 +334,6 @@ export const UserManager: React.FC<UserManagerProps> = ({ users, setUsers, profi
          )}
       </div>
 
-      {/* Table Container */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden flex-1 flex flex-col">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm text-zinc-400">
@@ -350,7 +347,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ users, setUsers, profi
                         </th>
                         <th className="p-4">Info Usuário</th>
                         <th className="p-4">Status</th>
-                        <th className="p-4">Perfis</th>
+                        <th className="p-4">Grupos</th>
                         <th className="p-4">Expiração</th>
                         <th className="p-4 text-right">Ações</th>
                     </tr>
@@ -388,7 +385,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ users, setUsers, profi
                                     onClick={() => setViewingProfilesUserId(user.id)}
                                     className="bg-zinc-800 hover:bg-zinc-700 px-2 py-1 rounded text-xs text-zinc-300 flex items-center gap-1 transition-colors"
                                 >
-                                    <Eye size={12} /> {user.assignedProfileIds.length} Associados
+                                    <Eye size={12} /> {user.assignedProfileIds.length} Grupos
                                 </button>
                             </td>
                             <td className="p-4">
@@ -396,7 +393,6 @@ export const UserManager: React.FC<UserManagerProps> = ({ users, setUsers, profi
                                     <span className={`text-xs font-mono ${new Date(user.expirationDate) < new Date() ? 'text-red-400' : 'text-zinc-300'}`}>
                                         {getRelativeTime(user.expirationDate)}
                                     </span>
-                                    {/* Tooltip */}
                                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-black border border-zinc-800 text-white text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-10">
                                         {new Date(user.expirationDate).toLocaleString('pt-BR')}
                                     </div>
@@ -423,12 +419,10 @@ export const UserManager: React.FC<UserManagerProps> = ({ users, setUsers, profi
                 </tbody>
             </table>
           </div>
-          {filteredUsers.length === 0 && <div className="p-8 text-center text-zinc-500">Nenhum usuário encontrado com os filtros atuais.</div>}
+          {filteredUsers.length === 0 && <div className="p-8 text-center text-zinc-500">Nenhum usuário encontrado.</div>}
       </div>
 
-      {/* --- MODALS --- */}
-
-      {/* Single Action Confirmation Modal */}
+      {/* Modals */}
       <Modal isOpen={singleActionModal.isOpen} onClose={() => setSingleActionModal(prev => ({ ...prev, isOpen: false }))} title={singleActionModal.title}>
           <div className="space-y-4 text-center">
               <div className={`mx-auto w-12 h-12 rounded-full flex items-center justify-center ${singleActionModal.isDelete ? 'bg-red-500/20 text-red-500' : 'bg-yellow-500/20 text-yellow-500'}`}>
@@ -436,172 +430,95 @@ export const UserManager: React.FC<UserManagerProps> = ({ users, setUsers, profi
               </div>
               <p className="text-zinc-300">{singleActionModal.message}</p>
               <div className="flex gap-3 mt-6">
-                  <button 
-                    onClick={() => setSingleActionModal(prev => ({ ...prev, isOpen: false }))}
-                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-2 rounded-lg transition-colors"
-                  >
-                      Cancelar
-                  </button>
-                  <button 
-                    onClick={singleActionModal.action}
-                    className={`flex-1 text-white py-2 rounded-lg transition-colors ${singleActionModal.isDelete ? 'bg-red-600 hover:bg-red-500' : 'bg-orange-600 hover:bg-orange-500'}`}
-                  >
-                      Confirmar
-                  </button>
+                  <button onClick={() => setSingleActionModal(prev => ({ ...prev, isOpen: false }))} className="flex-1 bg-zinc-800 text-white py-2 rounded-lg">Cancelar</button>
+                  <button onClick={singleActionModal.action} className={`flex-1 text-white py-2 rounded-lg ${singleActionModal.isDelete ? 'bg-red-600' : 'bg-orange-600'}`}>Confirmar</button>
               </div>
           </div>
       </Modal>
 
-      {/* Create/Edit User Modal */}
       <Modal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} title={editingId ? "Editar Usuário" : "Novo Usuário"}>
           <div className="space-y-4">
               <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-1">Apelido / Nickname (Opcional)</label>
-                  <input 
-                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-orange-500" 
-                    placeholder="Ex: Cliente VIP 01"
-                    value={formNickname} 
-                    onChange={e => setFormNickname(e.target.value)} 
-                  />
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Apelido (Opcional)</label>
+                  <input className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-orange-500" placeholder="Ex: Cliente VIP" value={formNickname} onChange={e => setFormNickname(e.target.value)} />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">Login do Usuário <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">Login</label>
                     <div className="flex gap-2">
                         <input className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-orange-500" value={formUsername} onChange={e => setFormUsername(e.target.value)} />
-                        <button onClick={generateUsername} className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 rounded-lg border border-zinc-700 transition-colors" title="Gerar Login Aleatório">
-                            <Shuffle size={16} />
-                        </button>
+                        <button onClick={generateUsername} className="bg-zinc-800 text-zinc-300 px-3 rounded-lg"><Shuffle size={16}/></button>
                     </div>
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">Senha <span className="text-red-500">*</span></label>
+                    <label className="block text-sm font-medium text-zinc-400 mb-1">Senha</label>
                     <div className="flex gap-2">
                         <input className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-orange-500" value={formPassword} onChange={e => setFormPassword(e.target.value)} />
-                        <button onClick={generatePassword} className="bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-3 rounded-lg border border-zinc-700 transition-colors" title="Gerar Senha">
-                            <Key size={16} />
-                        </button>
+                        <button onClick={generatePassword} className="bg-zinc-800 text-zinc-300 px-3 rounded-lg"><Key size={16}/></button>
                     </div>
                 </div>
               </div>
 
               <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-1">Email (Opcional)</label>
+                  <label className="block text-sm font-medium text-zinc-400 mb-1">Email</label>
                   <input className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-orange-500" value={formEmail} onChange={e => setFormEmail(e.target.value)} />
               </div>
 
               <div>
-                  <label className="block text-sm font-medium text-zinc-400 mb-2">Associar Perfis</label>
+                  <label className="block text-sm font-medium text-zinc-400 mb-2">Grupos</label>
                   <div className="bg-zinc-950 border border-zinc-800 rounded-lg p-1 max-h-60 overflow-y-auto">
                       <div className="grid grid-cols-1 gap-1">
                         {profiles.map(p => {
                             const isSelected = formAssignedProfiles.includes(p.id);
                             return (
-                                <label key={p.id} className={`flex items-center justify-between p-3 rounded cursor-pointer transition-all border ${isSelected ? 'bg-orange-500/10 border-orange-500/50' : 'border-transparent hover:bg-zinc-900'}`}>
+                                <label key={p.id} className={`flex items-center justify-between p-3 rounded cursor-pointer border ${isSelected ? 'bg-orange-500/10 border-orange-500/50' : 'border-transparent hover:bg-zinc-900'}`}>
                                     <div className="flex items-center gap-3">
                                         <div className={`w-4 h-4 rounded border flex items-center justify-center ${isSelected ? 'bg-orange-500 border-orange-500' : 'border-zinc-600'}`}>
                                             {isSelected && <Check size={12} className="text-white" />}
                                         </div>
                                         <span className={`text-sm ${isSelected ? 'text-white font-medium' : 'text-zinc-400'}`}>{p.name}</span>
                                     </div>
-                                    <span className="text-xs text-zinc-600">{p.group}</span>
-                                    <input 
-                                        type="checkbox" 
-                                        className="hidden"
-                                        checked={isSelected}
-                                        onChange={() => setFormAssignedProfiles(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])}
-                                    />
+                                    <input type="checkbox" className="hidden" checked={isSelected} onChange={() => setFormAssignedProfiles(prev => prev.includes(p.id) ? prev.filter(id => id !== p.id) : [...prev, p.id])} />
                                 </label>
                             );
                         })}
                       </div>
-                      {profiles.length === 0 && <div className="p-4 text-center text-xs text-zinc-500">Sem perfis disponíveis para associar.</div>}
                   </div>
               </div>
-              <div className="pt-2">
-                  <p className="text-xs text-zinc-500 mb-2">Nota: Expiração padrão é de 30 dias a partir de agora.</p>
-                  <button onClick={handleSaveUser} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 rounded-lg transition-colors">
-                      {editingId ? "Salvar Alterações" : "Criar Usuário"}
-                  </button>
-              </div>
+              <button onClick={handleSaveUser} className="w-full bg-orange-600 hover:bg-orange-500 text-white font-bold py-2.5 rounded-lg mt-2">{editingId ? "Salvar" : "Criar"}</button>
           </div>
       </Modal>
 
-      {/* Bulk Confirmation Modal */}
       <Modal isOpen={!!confirmAction} onClose={() => setConfirmAction(null)} title="Ação em Lote">
          <div className="text-center py-4">
-            <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${confirmAction === 'delete' ? 'bg-red-500/20 text-red-500' : 'bg-yellow-500/20 text-yellow-500'}`}>
-                <ShieldAlert size={32} />
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">
-                {confirmAction === 'delete' ? 'Exclusão Permanente' : confirmAction === 'block' ? 'Bloqueio em Massa' : 'Desbloqueio em Massa'}
-            </h3>
-            <p className="text-zinc-400 mb-6">
-                Você aplicará esta ação em <strong className="text-white">{selectedUsers.length} usuários</strong>.
-                {confirmAction === 'delete' && <span className="block mt-2 text-red-400 font-bold uppercase text-xs">Esta ação é irreversível!</span>}
-            </p>
-
-            <button 
-                onClick={executeBulkAction} 
-                disabled={confirmCountdown > 0}
-                className={`w-full py-3 rounded-lg font-bold transition-all flex items-center justify-center gap-2 ${
-                    confirmCountdown > 0 
-                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' 
-                    : confirmAction === 'delete' ? 'bg-red-600 hover:bg-red-500 text-white' : 'bg-orange-600 hover:bg-orange-500 text-white'
-                }`}
-            >
-                {confirmCountdown > 0 ? `Aguarde ${confirmCountdown}s...` : `Confirmar Ação`}
+            <ShieldAlert size={32} className={`mx-auto mb-4 ${confirmAction === 'delete' ? 'text-red-500' : 'text-yellow-500'}`} />
+            <h3 className="text-xl font-bold text-white mb-2">{confirmAction === 'delete' ? 'Exclusão' : 'Bloqueio/Desbloqueio'}</h3>
+            <p className="text-zinc-400 mb-6">Você afetará {selectedUsers.length} usuários.</p>
+            <button onClick={executeBulkAction} disabled={confirmCountdown > 0} className={`w-full py-3 rounded-lg font-bold ${confirmCountdown > 0 ? 'bg-zinc-800 text-zinc-500' : 'bg-orange-600 text-white'}`}>
+                {confirmCountdown > 0 ? `Aguarde ${confirmCountdown}s` : `Confirmar`}
             </button>
          </div>
       </Modal>
 
-      {/* Renewal Modal */}
-      <Modal isOpen={isRenewModalOpen} onClose={() => setIsRenewModalOpen(false)} title="Renovar Assinatura">
+      <Modal isOpen={isRenewModalOpen} onClose={() => setIsRenewModalOpen(false)} title="Renovar">
           <div className="space-y-4">
-              <p className="text-zinc-400 text-sm">Escolha o período para adicionar à assinatura atual.</p>
               <div className="grid grid-cols-2 gap-3">
-                  <button onClick={() => applyRenewal(1)} className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white py-3 rounded-lg transition-colors">+ 1 Mês</button>
-                  <button onClick={() => applyRenewal(3)} className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white py-3 rounded-lg transition-colors">+ 3 Meses</button>
-                  <button onClick={() => applyRenewal(6)} className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white py-3 rounded-lg transition-colors">+ 6 Meses</button>
-                  <button onClick={() => applyRenewal(12)} className="bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white py-3 rounded-lg transition-colors">+ 1 Ano</button>
+                  {[1, 3, 6, 12].map(m => <button key={m} onClick={() => applyRenewal(m)} className="bg-zinc-800 hover:bg-zinc-700 text-white py-3 rounded-lg">+{m} Mês{m > 1 && 'es'}</button>)}
               </div>
-              <div className="relative border-t border-zinc-800 pt-4 mt-2">
-                  <p className="text-xs text-zinc-500 mb-2">Ou defina uma data personalizada:</p>
-                  <div className="flex gap-2">
-                      <input 
-                        type="date" 
-                        className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-orange-500"
-                        value={customDate}
-                        onChange={e => setCustomDate(e.target.value)}
-                      />
-                      <button 
-                        onClick={() => applyRenewal('custom')}
-                        disabled={!customDate}
-                        className="bg-orange-600 disabled:bg-zinc-800 disabled:text-zinc-600 text-white px-4 rounded-lg font-medium transition-colors"
-                      >
-                          Salvar
-                      </button>
-                  </div>
+              <div className="flex gap-2">
+                  <input type="date" className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white" value={customDate} onChange={e => setCustomDate(e.target.value)} />
+                  <button onClick={() => applyRenewal('custom')} className="bg-orange-600 text-white px-4 rounded-lg">Salvar</button>
               </div>
           </div>
       </Modal>
 
-      {/* View Profiles Modal */}
-      <Modal isOpen={!!viewingProfilesUserId} onClose={() => setViewingProfilesUserId(null)} title="Perfis Associados">
+      <Modal isOpen={!!viewingProfilesUserId} onClose={() => setViewingProfilesUserId(null)} title="Grupos Associados">
           <div className="space-y-2">
               {viewingProfilesUserId && users.find(u => u.id === viewingProfilesUserId)?.assignedProfileIds.map(pid => {
                   const p = profiles.find(prof => prof.id === pid);
-                  if (!p) return null;
-                  return (
-                      <div key={pid} className="bg-zinc-900 border border-zinc-800 p-3 rounded-lg flex justify-between items-center">
-                          <span className="text-white font-medium">{p.name}</span>
-                          <span className="text-xs text-zinc-500">{p.group}</span>
-                      </div>
-                  );
+                  return p ? <div key={pid} className="bg-zinc-900 p-3 rounded flex justify-between"><span className="text-white">{p.name}</span></div> : null;
               })}
-              {viewingProfilesUserId && users.find(u => u.id === viewingProfilesUserId)?.assignedProfileIds.length === 0 && (
-                  <p className="text-zinc-500 text-center py-4">Nenhum perfil associado a este usuário.</p>
-              )}
+              {viewingProfilesUserId && users.find(u => u.id === viewingProfilesUserId)?.assignedProfileIds.length === 0 && <p className="text-center text-zinc-500">Nenhum grupo associado.</p>}
           </div>
       </Modal>
     </div>

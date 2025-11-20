@@ -21,15 +21,33 @@ export interface ProxyItem {
   lastCheck?: string; // ISO Date
 }
 
+export interface Tag {
+  id: string;
+  label: string;
+  color: string;
+}
+
+export interface AppItem {
+  id: string;
+  name: string;
+  url: string;
+  icon?: string; // URL or base64
+  proxyId?: string;
+  userAgent: string;
+  blockedElements: string[]; // CSS selectors
+  tags: string[]; // Added tags
+  status: 'pronto' | 'rodando';
+}
+
 export interface Profile {
   id: string;
   name: string;
-  group: string;
+  // group: string; // REMOVED CATEGORY
   tags: string[];
-  userAgent: string;
   status: 'criado' | 'rodando' | 'salvo' | 'erro' | 'desabilitado';
   lastSession?: string;
-  proxyId?: string;
+  banner?: string; // Image URL
+  appIds: string[]; // List of App IDs included in this profile
 }
 
 export interface User {
@@ -43,17 +61,6 @@ export interface User {
   expirationDate: string; // ISO Date
   assignedProfileIds: string[];
   isFavorite: boolean;
-}
-
-export interface GroupOption {
-  id: string;
-  label: string;
-}
-
-export interface TagOption {
-  id: string;
-  label: string;
-  color: string;
 }
 
 export interface UserAgentOption {
@@ -77,4 +84,4 @@ export interface RemoteConfig {
   lastGenerated: string;
 }
 
-export type ViewState = 'dashboard' | 'proxies' | 'profiles' | 'users' | 'settings' | 'logs' | 'api';
+export type ViewState = 'dashboard' | 'apps' | 'proxies' | 'profiles' | 'users' | 'settings' | 'logs' | 'api';

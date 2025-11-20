@@ -4,13 +4,14 @@ import { LoginPage } from './components/Login';
 import { Dashboard } from './components/Dashboard';
 import { ProxyManager } from './components/ProxyManager';
 import { ProfileManager } from './components/ProfileManager';
+import { AppManager } from './components/AppManager';
 import { UserManager } from './components/UserManager';
 import { Settings } from './components/Settings';
 import { Logs } from './components/Logs';
 import { ApiSync } from './components/ApiSync';
-import { ViewState, User, Profile, ProxyItem } from './types';
-import { INITIAL_USERS, INITIAL_PROFILES, INITIAL_PROXIES } from './constants';
-import { LayoutDashboard, Users, Globe, Monitor, Settings as SettingsIcon, LogOut, Menu, X, ScrollText, Cable } from 'lucide-react';
+import { ViewState, User, Profile, ProxyItem, AppItem, Tag } from './types';
+import { INITIAL_USERS, INITIAL_PROFILES, INITIAL_PROXIES, MOCK_APPS, INITIAL_TAGS } from './constants';
+import { LayoutDashboard, Users, Globe, Monitor, Settings as SettingsIcon, LogOut, Menu, X, ScrollText, Cable, Grid } from 'lucide-react';
 
 function App() {
   // Auth State
@@ -20,6 +21,8 @@ function App() {
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [profiles, setProfiles] = useState<Profile[]>(INITIAL_PROFILES);
   const [proxies, setProxies] = useState<ProxyItem[]>(INITIAL_PROXIES);
+  const [apps, setApps] = useState<AppItem[]>(MOCK_APPS);
+  const [tags, setTags] = useState<Tag[]>(INITIAL_TAGS);
 
   // Navigation State
   const [view, setView] = useState<ViewState>('dashboard');
@@ -72,7 +75,8 @@ function App() {
           <NavItem target="dashboard" icon={LayoutDashboard} label="Visão Geral" />
           <div className="my-4 border-t border-zinc-900" />
           <div className="px-4 mb-2 text-xs font-semibold text-zinc-600 uppercase tracking-wider">Gerenciamento</div>
-          <NavItem target="profiles" icon={Monitor} label="Perfis" />
+          <NavItem target="apps" icon={Grid} label="Meus Apps" />
+          <NavItem target="profiles" icon={Monitor} label="Grupos (Perfis)" />
           <NavItem target="proxies" icon={Globe} label="Proxies" />
           <NavItem target="users" icon={Users} label="Usuários" />
           <div className="my-4 border-t border-zinc-900" />
@@ -97,8 +101,9 @@ function App() {
       <main className="flex-1 h-screen overflow-y-auto bg-[#09090b]">
         <div className="max-w-7xl mx-auto">
             {view === 'dashboard' && <Dashboard users={users} profiles={profiles} proxies={proxies} />}
+            {view === 'apps' && <AppManager apps={apps} setApps={setApps} proxies={proxies} tags={tags} setTags={setTags} />}
             {view === 'proxies' && <ProxyManager proxies={proxies} setProxies={setProxies} />}
-            {view === 'profiles' && <ProfileManager profiles={profiles} setProfiles={setProfiles} proxies={proxies} />}
+            {view === 'profiles' && <ProfileManager profiles={profiles} setProfiles={setProfiles} proxies={proxies} apps={apps} tags={tags} setTags={setTags} />}
             {view === 'users' && <UserManager users={users} setUsers={setUsers} profiles={profiles} />}
             {view === 'logs' && <Logs />}
             {view === 'api' && <ApiSync />}
