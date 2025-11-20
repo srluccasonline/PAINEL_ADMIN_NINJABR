@@ -1,0 +1,5 @@
+{
+  "name": "NinjaBR - MultiLogin Panel",
+  "description": "A dark-themed multi-login management panel for browser session sharing, proxy management, and user administration.",
+  "requestFramePermissions": []
+}
