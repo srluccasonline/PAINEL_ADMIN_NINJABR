@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { AppItem, ProxyItem, Tag } from '../types';
 import { MOCK_USER_AGENTS } from '../constants';
-import { Plus, Edit2, Trash2, Play, Monitor, Globe, Ban, Shield, Box, ExternalLink, Loader2, Tag as TagIcon } from 'lucide-react';
+import { Plus, Edit2, Trash2, Play, Monitor, Globe, Ban, Shield, Box, ExternalLink, Loader2, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { TagManager } from './TagManager';
 
@@ -13,6 +13,8 @@ interface AppManagerProps {
   tags: Tag[];
   setTags: React.Dispatch<React.SetStateAction<Tag[]>>;
 }
+
+type IconSource = 'none' | 'favicon' | 'custom';
 
 export const AppManager: React.FC<AppManagerProps> = ({ apps, setApps, proxies, tags, setTags }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,6 +28,10 @@ export const AppManager: React.FC<AppManagerProps> = ({ apps, setApps, proxies, 
       tags: []
   });
   const [tempBlockElement, setTempBlockElement] = useState('');
+  
+  // Icon Logic State
+  const [iconSource, setIconSource] = useState<IconSource>('none');
+  const [customIconUrl, setCustomIconUrl] = useState('');
 
   // Simulation
   const [launchingAppId, setLaunchingAppId] = useState<string | null>(null);
@@ -34,6 +40,19 @@ export const AppManager: React.FC<AppManagerProps> = ({ apps, setApps, proxies, 
       if (app) {
           setEditingId(app.id);
           setFormData({ ...app });
+          
+          // Determine initial icon state based on existing data
+          if (!app.icon) {
+              setIconSource('none');
+              setCustomIconUrl('');
+          } else if (app.icon.includes('google.com/s2/favicons')) {
+              setIconSource('favicon');
+              setCustomIconUrl('');
+          } else {
+              setIconSource('custom');
+              setCustomIconUrl(app.icon);
+          }
+
       } else {
           setEditingId(null);
           setFormData({
@@ -43,21 +62,51 @@ export const AppManager: React.FC<AppManagerProps> = ({ apps, setApps, proxies, 
               url: 'https://',
               name: ''
           });
+          setIconSource('none');
+          setCustomIconUrl('');
       }
       setIsModalOpen(true);
+  };
+
+  const getFaviconUrl = (url: string) => {
+      try {
+          const domain = new URL(url).hostname;
+          return `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
+      } catch (e) {
+          return '';
+      }
+  };
+
+  const getSafeHostname = (url: string | undefined) => {
+    if (!url) return '...';
+    try {
+        return new URL(url).hostname;
+    } catch {
+        return 'URL Inválida';
+    }
   };
 
   const handleSave = () => {
       if (!formData.name || !formData.url) return;
 
+      // Resolve Icon
+      let finalIcon = '';
+      if (iconSource === 'favicon') {
+          finalIcon = getFaviconUrl(formData.url);
+      } else if (iconSource === 'custom') {
+          finalIcon = customIconUrl;
+      } else {
+          finalIcon = ''; // None
+      }
+
       if (editingId) {
-          setApps(prev => prev.map(a => a.id === editingId ? { ...a, ...formData } as AppItem : a));
+          setApps(prev => prev.map(a => a.id === editingId ? { ...a, ...formData, icon: finalIcon } as AppItem : a));
       } else {
           const newApp: AppItem = {
               id: Date.now().toString(),
               name: formData.name!,
               url: formData.url!,
-              icon: formData.icon,
+              icon: finalIcon,
               proxyId: formData.proxyId,
               userAgent: formData.userAgent || MOCK_USER_AGENTS[0].value,
               blockedElements: formData.blockedElements || [],
@@ -119,12 +168,6 @@ export const AppManager: React.FC<AppManagerProps> = ({ apps, setApps, proxies, 
             </div>
             <div className="flex gap-3">
                 <button 
-                    onClick={() => setIsTagManagerOpen(true)}
-                    className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2 rounded-lg font-medium transition-colors border border-zinc-700"
-                >
-                    <TagIcon size={18} /> Gerenciar Tags
-                </button>
-                <button 
                     onClick={() => handleOpenModal()}
                     className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg font-medium transition-colors"
                 >
@@ -144,7 +187,7 @@ export const AppManager: React.FC<AppManagerProps> = ({ apps, setApps, proxies, 
                                     {app.icon ? (
                                         <img src={app.icon} alt={app.name} className="w-full h-full object-cover" />
                                     ) : (
-                                        <Box className="text-zinc-500" />
+                                        <span className="text-2xl font-bold text-zinc-600">{app.name.charAt(0).toUpperCase()}</span>
                                     )}
                                 </div>
                                 <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -226,6 +269,73 @@ export const AppManager: React.FC<AppManagerProps> = ({ apps, setApps, proxies, 
                     </div>
                 </div>
 
+                {/* Icon Selection Section */}
+                <div>
+                    <label className="block text-sm font-medium text-zinc-400 mb-3">Ícone do App</label>
+                    <div className="grid grid-cols-3 gap-3 mb-3">
+                        <button 
+                            onClick={() => setIconSource('none')}
+                            className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${iconSource === 'none' ? 'bg-orange-500/10 border-orange-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                        >
+                            <Box size={20} className="mb-1" />
+                            <span className="text-[10px] font-bold uppercase">Sem Ícone</span>
+                        </button>
+
+                        <button 
+                            onClick={() => setIconSource('favicon')}
+                            className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${iconSource === 'favicon' ? 'bg-orange-500/10 border-orange-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                        >
+                            <LinkIcon size={20} className="mb-1" />
+                            <span className="text-[10px] font-bold uppercase">Usar FavIcon</span>
+                        </button>
+
+                        <button 
+                            onClick={() => setIconSource('custom')}
+                            className={`flex flex-col items-center justify-center p-3 rounded-lg border transition-all ${iconSource === 'custom' ? 'bg-orange-500/10 border-orange-500 text-white' : 'bg-zinc-900 border-zinc-800 text-zinc-500 hover:border-zinc-700'}`}
+                        >
+                            <ImageIcon size={20} className="mb-1" />
+                            <span className="text-[10px] font-bold uppercase">URL Custom</span>
+                        </button>
+                    </div>
+
+                    {/* Preview Logic */}
+                    <div className="flex items-center gap-4 bg-zinc-950 border border-zinc-800 p-3 rounded-lg">
+                        <div className="w-12 h-12 bg-zinc-800 rounded border border-zinc-700 overflow-hidden flex items-center justify-center flex-shrink-0">
+                            {iconSource === 'none' && <span className="text-xl font-bold text-zinc-600">{formData.name ? formData.name.charAt(0).toUpperCase() : '?'}</span>}
+                            {iconSource === 'favicon' && (
+                                formData.url ? 
+                                <img src={getFaviconUrl(formData.url)} alt="Favicon Preview" className="w-8 h-8 object-cover" onError={(e) => (e.currentTarget.style.display = 'none')} /> 
+                                : <LinkIcon className="text-zinc-600" />
+                            )}
+                            {iconSource === 'custom' && (
+                                customIconUrl ? 
+                                <img src={customIconUrl} alt="Custom Preview" className="w-full h-full object-cover" /> 
+                                : <ImageIcon className="text-zinc-600" />
+                            )}
+                        </div>
+                        
+                        <div className="flex-1">
+                            {iconSource === 'none' && <p className="text-sm text-zinc-500 italic">Será usada a inicial do nome.</p>}
+                            
+                            {iconSource === 'favicon' && (
+                                <div className="text-sm text-zinc-300">
+                                    <p>Extraindo de: <span className="text-orange-500 font-mono text-xs">{getSafeHostname(formData.url)}</span></p>
+                                    <p className="text-xs text-zinc-500 mt-1">Usando Google S2 Service</p>
+                                </div>
+                            )}
+
+                            {iconSource === 'custom' && (
+                                <input 
+                                    className="w-full bg-zinc-900 border border-zinc-700 rounded px-3 py-2 text-sm text-white focus:border-orange-500 focus:outline-none"
+                                    placeholder="Cole a URL da imagem aqui..."
+                                    value={customIconUrl}
+                                    onChange={e => setCustomIconUrl(e.target.value)}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+
                 <div>
                     <label className="block text-sm font-medium text-zinc-400 mb-1">Tags</label>
                     <div className="flex flex-wrap gap-2 bg-zinc-950 border border-zinc-800 p-3 rounded-lg">
@@ -242,25 +352,6 @@ export const AppManager: React.FC<AppManagerProps> = ({ apps, setApps, proxies, 
                             )
                         })}
                         {tags.length === 0 && <span className="text-xs text-zinc-500">Nenhuma tag disponível.</span>}
-                    </div>
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-zinc-400 mb-1">URL do Logo/Ícone (Opcional)</label>
-                    <div className="flex gap-2">
-                        <div className="flex-1">
-                             <input 
-                                className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-orange-500 text-sm"
-                                value={formData.icon || ''}
-                                onChange={e => setFormData({ ...formData, icon: e.target.value })}
-                                placeholder="https://... (png/jpg)"
-                            />
-                        </div>
-                        {formData.icon && (
-                            <div className="w-10 h-10 bg-zinc-800 rounded border border-zinc-700 overflow-hidden flex-shrink-0">
-                                <img src={formData.icon} alt="Preview" className="w-full h-full object-cover" />
-                            </div>
-                        )}
                     </div>
                 </div>
 

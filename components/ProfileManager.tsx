@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Profile, AppItem, Tag } from '../types';
-import { Plus, Save, Loader2, Tag as TagIcon, Edit2, Trash2, Ban, ShieldAlert, LayoutGrid, Check } from 'lucide-react';
+import { Plus, Save, Loader2, Edit2, Trash2, Ban, ShieldAlert, LayoutGrid, Check } from 'lucide-react';
 import { Modal } from './ui/Modal';
 import { TagManager } from './TagManager';
 
@@ -16,7 +16,6 @@ interface ProfileManagerProps {
 
 export const ProfileManager: React.FC<ProfileManagerProps> = ({ profiles, setProfiles, apps, tags, setTags }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isTagManagerOpen, setIsTagManagerOpen] = useState(false);
   
   // Form State
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -127,12 +126,6 @@ export const ProfileManager: React.FC<ProfileManagerProps> = ({ profiles, setPro
                 <p className="text-zinc-400 text-sm mt-1">Organize seus apps em pacotes para distribuir aos usuários</p>
             </div>
             <div className="flex gap-3">
-                 <button 
-                    onClick={() => setIsTagManagerOpen(true)}
-                    className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2 rounded-lg font-medium transition-colors border border-zinc-700"
-                >
-                    <TagIcon size={18} /> Gerenciar Tags
-                </button>
                 <button onClick={() => handleOpenModal()} className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white px-4 py-2 rounded-lg font-medium transition-colors">
                     <Plus size={18} /> Novo Grupo
                 </button>
@@ -183,7 +176,13 @@ export const ProfileManager: React.FC<ProfileManagerProps> = ({ profiles, setPro
                                 <div className="flex flex-wrap gap-2">
                                     {profileApps.slice(0, 5).map(app => (
                                         <div key={app.id} className="bg-zinc-950 border border-zinc-800 p-1.5 rounded-md flex items-center gap-2" title={app.name}>
-                                            {app.icon ? <img src={app.icon} className="w-4 h-4 rounded-sm" alt=""/> : <div className="w-4 h-4 bg-zinc-800 rounded-sm" />}
+                                            {app.icon ? (
+                                                <img src={app.icon} className="w-4 h-4 rounded-sm object-cover" alt=""/>
+                                            ) : (
+                                                <div className="w-4 h-4 bg-zinc-800 rounded-sm flex items-center justify-center text-[8px] font-bold text-zinc-500">
+                                                    {app.name.charAt(0)}
+                                                </div>
+                                            )}
                                             <span className="text-xs text-zinc-300 truncate max-w-[80px]">{app.name}</span>
                                         </div>
                                     ))}
@@ -248,8 +247,12 @@ export const ProfileManager: React.FC<ProfileManagerProps> = ({ profiles, setPro
                             return (
                                 <div key={app.id} onClick={() => toggleApp(app.id)} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${isSelected ? 'bg-orange-500/10 border-orange-500' : 'bg-zinc-950 border-zinc-800 hover:border-zinc-700'}`}>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 bg-zinc-800 rounded overflow-hidden">
-                                            {app.icon ? <img src={app.icon} className="w-full h-full object-cover" alt=""/> : <div className="w-full h-full bg-zinc-700" />}
+                                        <div className="w-8 h-8 bg-zinc-800 rounded overflow-hidden flex items-center justify-center border border-zinc-700">
+                                            {app.icon ? (
+                                                <img src={app.icon} className="w-full h-full object-cover" alt=""/>
+                                            ) : (
+                                                <span className="text-xs font-bold text-zinc-500">{app.name.charAt(0)}</span>
+                                            )}
                                         </div>
                                         <div>
                                             <p className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-zinc-400'}`}>{app.name}</p>
@@ -269,8 +272,6 @@ export const ProfileManager: React.FC<ProfileManagerProps> = ({ profiles, setPro
                 </button>
             </div>
         </Modal>
-
-        <TagManager isOpen={isTagManagerOpen} onClose={() => setIsTagManagerOpen(false)} tags={tags} setTags={setTags} />
 
         <Modal isOpen={confirmModal.isOpen} onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))} title={confirmModal.title}>
             <div className="text-center p-4">
